@@ -15,17 +15,73 @@ app = Flask(__name__)
 api = Api(app)
 # for this resource you can get, put, post, and delete and so on.
 
+#we're going to use an in-memory database,w hich is just a Python list
+items = []
+
 # The API works with resources and every resource has to be a class.
 #  class student then inherits from the class resource.
-class Student(Resource):
+class Item(Resource):
     def get(self, name):
-        return {'student': name}
+        # Get is going to look in items list and retrieve an item
+        # that matches the name that has been requested.
+        # All it has to do is iterate over this list and return the appropriate item.
+        for item in items:
+            if item['name'] == name:
+                return item
+                # we'd no longer need to do JSONify when talking with flask restful 
+                # because flask restful does it for us, so we can just return dictionaries.
+        # what happens if we don't find the item with a specific name.
+        # as we know, all Python methods return none by default
+        # what we have to do is change that return none to be something like item is none.
+        return {'item': None}, 404
+        # The error code for not found is 404.
+        # This is a common interview question as well.
+        # What's the most popular http status code?
+        # And the most popular is not 404, it is 200.
+
+
     # so now we have our resource and what we've sent is that this resource can only
     # be accessed with a get method.
 
+    def post(self, name):
+        # the same set of parameters.
+        # That is because when we access /item/itemname, that name is going to come to be name here,
+        
+        # in order to create items, it's very simple.
+        # We're going to start without even looking at the JSON.
+        item = {'name': name, 'price': 12.00}
+        items.append(item)
+        # that'll put this dictionary as one of the elements in this list at the very end of the list.
+        # Finally, we also want to tell the client, in this case, Postman, but it could be a mobile app
+        # or web app, that we have processed this addition, that we have created this item and added it to our database,
+        # in this case, our list.        
+        # In order to do that, we're going to just return item so that the application knows that this has happened.
+
+        # Something else to remember is that creating
+        # also has its own http status code, 
+        # 200 OK is for when the server just kind of returns some data and says everything's okay.
+        # 201 is for created.
+        return item, 201
+
+        # Notice there is also a very similar status code called 202, which is accepted,
+        # and the accepted code is when you are delaying the creation.
+        # For example, if creating the object takes a long time,
+        # you may say, "I'm gonna create this object,
+        # "return 202, and the object that's created then
+        # "after five or 10 minutes."
+        # The client doesn't have to wait five or 10 minutes,
+        # but it knows that you have accepted the creation of that.
+        # It may then fail, but that's out with the client's control.
+        # So, hopefully all of that makes sense.
+        # Using the right status codes is very important
+        # because it is a very quick way of clients,
+        # like web applications or mobile applications,
+
 # tell our API, okay , This resource that we've created, the student,
 # now is gonna be accessible via our API,
-api.add_resource(Student, '/student/<string:name>')
+api.add_resource(Item, '/item/<string:name>')
 
 # finally app.run and port=5000, this is not necessary, that's the default
 app.run(port=5000)
+
+
