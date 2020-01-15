@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Resource, Api
 # Resource is just a thing that our API can return and create.
 # Resource are usually mapped into database tables as well,
@@ -44,12 +44,28 @@ class Item(Resource):
     # be accessed with a get method.
 
     def post(self, name):
-        # the same set of parameters.
-        # That is because when we access /item/itemname, that name is going to come to be name here,
+        # The first thing we have to do is to go up here and make sure to import request.
+        # That is going to be when somebody such as postman
+        # makes a request to our API, that request is in this variable.
+        # So, that request is going to have a JSON payload, a body attached to it.
+        # So, we're going to say data equals request.get JSON.
+        # If the request does not attach a JSON payload or the request does not have the proper content-type header,
         
-        # in order to create items, it's very simple.
-        # We're going to start without even looking at the JSON.
-        item = {'name': name, 'price': 12.00}
+        # data = request.get_json()
+        # if your clients are going to give you JSON or not, you can prevent this from giving you an error. 
+        # There are two things you that you can pass this method that are really useful.
+        
+        # data = request.get_json(force=True)
+        # force=True means that you do not need the content-type header.
+        # It will just look in the content and it will format it even if the content type header
+        # is not set to be application/JSON.
+        # This is nice, but it's also dangerous
+
+        # The other one that is also quite handy sometimes is silent equals true and what this does is
+        # it doesn't give an error, it just basically returns none.
+        data = request.get_json(silent=True)
+
+        item = {'name': name, 'price': data['price']}
         items.append(item)
         # that'll put this dictionary as one of the elements in this list at the very end of the list.
         # Finally, we also want to tell the client, in this case, Postman, but it could be a mobile app
@@ -77,11 +93,22 @@ class Item(Resource):
         # because it is a very quick way of clients,
         # like web applications or mobile applications,
 
+# 73. Class item list is gonna be on new resource,
+class ItemList(Resource):
+    def get(self):
+        return {'items': items}
+        # items is a list which contains all our items.
+
 # tell our API, okay , This resource that we've created, the student,
 # now is gonna be accessible via our API,
 api.add_resource(Item, '/item/<string:name>')
 
+# Don't forget to add the resource item list, and make sure to give it the correct endpoint,
+api.add_resource(ItemList, '/items')
+
 # finally app.run and port=5000, this is not necessary, that's the default
-app.run(port=5000)
+app.run(port=5000, debug=True)
+    # 73. Now when you get on error message,
+    # when something really goes wrong in your application,
 
 
